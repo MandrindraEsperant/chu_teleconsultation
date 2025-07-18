@@ -36,7 +36,8 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await prisma.app_user.findUnique({ where: { email } });
+    const user = await prisma.user.findUnique({ where: { email } });
+    
     if (!user) {
       return errorResponse(res, 'Utilisateur introuvable.', 404);
     }
@@ -50,9 +51,10 @@ exports.login = async (req, res) => {
     const userAgent = req.headers['user-agent'] || 'Inconnu';
     const ipAddress = req.ip || req.connection.remoteAddress;
 
-    const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 60); // expire dans 60 jours
+    const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 60); 
+    // expire dans 60 jours:dans le base de donné
 
-    const session = await prisma.user_session.create({
+    const session = await prisma.session.create({
       data: {
         userId: user.id,
         userAgent,
@@ -71,7 +73,7 @@ exports.login = async (req, res) => {
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 1000 * 60 * 60 * 24 * 60, // 60 jours
+      maxAge: 1000 * 60 * 60 * 24 * 60, // 60 jours : duré de cookies
     });
 
     return successResponse(res, 'Connexion réussie.', 200, {
@@ -89,18 +91,17 @@ exports.verify = async (req, res) => {
 
   try {
     // Extraire le token depuis le header Authorization ou le cookie
-    const token = req.headers.authorization?.split(' ')[1] || req.cookies.token;
-
+     const token =req.cookies.token;
     if (!token) {
       return errorResponse(res, 'Aucun token fourni.');
     }
     const decoded = verifyToken(token);
 
     // Vérifier si la session existe et est valide dans la base de données
-    const session = await prisma.user_session.findUnique({
+    const session = await prisma.session.findUnique({
       where: { id: decoded.sessionId },
     });
-
+ 
     if (!session) {
       return res.status(401).json({
         success: false,

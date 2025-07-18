@@ -15,7 +15,9 @@ app.use(cors({
 
 // Routes
 const authRoutes = require('./routes/authRoutes');
+const meetingRoutes = require('./routes/meetingRoutes')
 app.use('/api/auth', authRoutes);
+app.use('/api/meeting',meetingRoutes)
 app.get('/', (req, res) => res.send('API Secure Auth OK'));
 
 module.exports = app;
