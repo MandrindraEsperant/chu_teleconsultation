@@ -20,6 +20,8 @@ model User {
   // Relations
   sessions            Session[]
   hostedMeetings      Meeting[] @relation("MeetingHost")
+  hostedConsultation Consultation[] @relation("ConsultationHost")
+  withConsultation Consultation[] @relation("ConsultationWith")
 
   @@map("app_user")
 }
@@ -55,7 +57,21 @@ model Meeting {
 
   @@map("meeting")
 }
+model Consultation{
+  id            String        @id @default(cuid())
+  date DateTime
+  type      ConsultationType?
+  status      MeetingStatus @default(SCHEDULED)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  // Relations
+  host         User                @relation("ConsultationHost", fields: [hostId], references: [id], onDelete: Cascade)
+  hostId       Int
+  with        User                @relation("ConsultationWith", fields: [withId], references: [id], onDelete: Cascade)
+    withId   Int
+  @@map("consultation")
 
+}
 enum ReminderType {
   NONE
   AT_TIME
@@ -76,3 +92,8 @@ enum MeetingStatus {
   CANCELLED
 }
 
+enum ConsultationType{
+  GENENAL
+  TRACKING
+  SPECIAL
+}

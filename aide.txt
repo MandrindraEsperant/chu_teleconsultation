@@ -1,0 +1,2 @@
+voir l'emplacement de mkcert : mkcert -CAROOT
+partage de certificat : python3 -m http.server 8000
